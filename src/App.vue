@@ -1,32 +1,32 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+  <div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand ms-3" href="#">Auth</a>
+        <div class="container-fluid">
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div>
+              <router-link to="/" v-if="existUser" class="ms-2 btn btn-primary">Index</router-link> 
+              <router-link to="/register" v-if="!existUser" class="ms-4 btn btn-primary">Register</router-link> 
+              <router-link to="/login" v-if="!existUser" class="ms-3 btn btn-primary">Login</router-link> 
+              <button type="submit" @click="signOut" v-if="existUser" class="btn btn-primary ms-3">Sign Out</button>
+            </div>
+          </div>
+        </div>
+    </nav>
+    <div class="container">
+      <router-view/>
     </div>
-    <router-view/>
   </div>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+<script>
+import { mapActions, mapGetters } from 'vuex'
+export default {
+  methods: {
+    ...mapActions(['signOut'])
+  },
+  computed: {
+    ...mapGetters(['existUser'])
+  },
 }
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>
+</script>
