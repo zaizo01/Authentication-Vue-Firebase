@@ -10,7 +10,9 @@ export default new Vuex.Store({
     usuario: null,
     error: null,
     tasks: [],
-    task: {name: '', id: ''}
+    task: {name: '', id: ''},
+    load: false,
+    texto: ''
   },
   mutations: {
     setUser(state, payload){
@@ -27,10 +29,19 @@ export default new Vuex.Store({
     },
     setDeleteTask(state, payload){
       state.tasks = state.tasks.filter(item => item.id !== payload)
+    },
+    loadFirebase(state, payload){
+      state.load = payload
     }
   },
   actions: {
+    searcher({commit, state}, payload){
+      state.texto = payload.toLowerCase();
+    },
     getTasks({commit, state}){
+
+      commit('loadFirebase', true);
+
       const tasks = []
       db.collection(state.usuario.email).get()
       .then(res => {
@@ -39,8 +50,12 @@ export default new Vuex.Store({
               task.id = doc.id
               tasks.push(task)
           })
-          commit('setTasks', tasks)
-      })
+          setTimeout(() => {
+            
+            commit('loadFirebase', false);
+          }, 2000);
+        })
+        commit('setTasks', tasks)
       .catch(error => console.log(error))
   },
 
@@ -65,11 +80,13 @@ export default new Vuex.Store({
   },
 
   addTask({commit, state}, nameTask){
+    commit('loadFirebase', true);
     db.collection(state.usuario.email).add({
         name: nameTask
     })
     .then(doc => {
         router.push({name: 'Index'})
+        commit('loadFirebase', false);
     })
     .catch(error => console.log(error))
 },
@@ -100,7 +117,11 @@ deleteTask({commit, state}, id){
           })
           .catch(error => {
             console.log(error);
-            commit('setError', error)
+            commit('setError', error.code)
+          })
+          .catch(error => {
+            console.log(error);
+            commit('setError', error.code);
           })
     },
     loginUser({commit}, usuario){
@@ -116,7 +137,7 @@ deleteTask({commit, state}, id){
           })
           .catch(error => {
             console.log(error);
-            commit('setError', error);
+            commit('setError', error.code);
           })
     },
     signOut({commit}){
@@ -134,6 +155,16 @@ deleteTask({commit, state}, id){
       } else {
         return true
       }
+    },
+    arrayFiltered(state){
+      let arrFiltered = [];
+      for(let task of state.tasks){
+        let taskName = task.name.toLowerCase();
+        if (taskName.indexOf(state.texto) >= 0) {
+          arrFiltered.push(task);
+        }
+      }
+      return arrFiltered;
     }
   },
   modules: {
